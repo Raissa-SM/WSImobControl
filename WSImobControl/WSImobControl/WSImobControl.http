@@ -1,0 +1,6 @@
+@WSImobControl_HostAddress = http://localhost:5055
+
+GET {{WSImobControl_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
