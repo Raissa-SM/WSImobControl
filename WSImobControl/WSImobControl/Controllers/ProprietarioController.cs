@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WSImobControl.Model;
 
 namespace WSImobControl.Controllers
 {
@@ -7,16 +8,52 @@ namespace WSImobControl.Controllers
     [ApiController]
     public class ProprietarioController : ControllerBase
     {
+        private static List<Proprietario> lista = new List<Proprietario>();
+
         [HttpGet]
-        public string GetDados()
+        public List<Proprietario> Get()
         {
-            return "Dados";
+            return lista;
         }
 
-        [HttpGet("BSN")]
-        public string GetDadosBSN()
+        [HttpPost]
+        public string Post(Proprietario prop)
         {
-            return "BSN";
+            lista.Add(prop);
+            return "Inclusão realizada com sucesso!";
+        }
+
+        [HttpGet("Parametro1")]
+        public Proprietario Get([FromQuery] string id)
+        {
+            var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
+            //select * from proprietario
+            //where Id = ?
+            return prop;
+        }
+
+        [HttpGet("Parametro2/{id}")]
+        public Proprietario Get2([FromRoute] string id)
+        {
+            var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
+            //select * from proprietario
+            //where Id = ?
+            return prop;
+        }
+
+        [HttpGet("Parametro3")]
+        public Proprietario Get3([FromHeader] string id)
+        {
+            var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
+            //select * from proprietario
+            //where Id = ?
+            return prop;
+        }
+
+        [HttpGet("Curso")]
+        public string GetCurso()
+        {
+            return "Sistemas de Informação";
         }
     }
 }
