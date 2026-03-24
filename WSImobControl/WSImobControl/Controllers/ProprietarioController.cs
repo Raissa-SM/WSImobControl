@@ -23,8 +23,57 @@ namespace WSImobControl.Controllers
             return "Inclusão realizada com sucesso!";
         }
 
-        [HttpGet("Parametro1")]
-        public Proprietario Get([FromQuery] string id)
+        [HttpPut]
+        public string Put(Proprietario proprietario)
+        {
+            var existe = lista.Where(prop => prop.Id == proprietario.Id)
+                         .FirstOrDefault();
+            if (existe != null)
+            {
+                existe.Nome = proprietario.Nome;
+                existe.Status = proprietario.Status;
+                return "Alteração realizada com sucesso!";
+            }
+            else
+            {
+                return "Erro! Proprietario não encontrado!";
+            }
+        }
+
+        [HttpDelete]
+        public string Delete(Proprietario proprietario)
+        {
+            var existe = lista.Where(prop => prop.Id == proprietario.Id)
+                         .FirstOrDefault();
+            if (existe != null)
+            {
+                lista.Remove(existe);
+                return "Exclusão realizada com sucesso!";
+            }
+            else
+            {
+                return "Erro! Proprietario não encontrado!";
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public string Delete2(string id)
+        {
+            var existe = lista.Where(prop => prop.Id.ToString() == id)
+                         .FirstOrDefault();
+            if (existe != null)
+            {
+                lista.Remove(existe);
+                return "Exclusão realizada com sucesso!";
+            }
+            else
+            {
+                return "Erro! Proprietario não encontrado!";
+            }
+        }
+
+        [HttpGet("{id}")]
+        public Proprietario Get2([FromRoute] string id)
         {
             var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
             //select * from proprietario
@@ -32,8 +81,8 @@ namespace WSImobControl.Controllers
             return prop;
         }
 
-        [HttpGet("Parametro2/{id}")]
-        public Proprietario Get2([FromRoute] string id)
+        [HttpGet("Parametro1")]
+        public Proprietario Get([FromQuery] string id)
         {
             var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
             //select * from proprietario
