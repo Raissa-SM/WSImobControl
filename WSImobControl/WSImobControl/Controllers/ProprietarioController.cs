@@ -1,37 +1,43 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WSImobControl.Data;
 using WSImobControl.Model;
 
 namespace WSImobControl.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProprietarioController : ControllerBase
+    public class ProprietarioController(PostgresDbContext context) : ControllerBase
     {
-        private static List<Proprietario> lista = new List<Proprietario>();
-
         [HttpGet]
         public List<Proprietario> Get()
         {
+            var lista = context.Proprietario
+                               .OrderBy(prop => prop.Nome)
+                               .ToList();
             return lista;
         }
 
         [HttpPost]
         public string Post(Proprietario prop)
         {
-            lista.Add(prop);
+            context.Proprietario.Add(prop);
+            context.SaveChanges();
             return "Inclusão realizada com sucesso!";
         }
 
         [HttpPut]
         public string Put(Proprietario proprietario)
         {
-            var existe = lista.Where(prop => prop.Id == proprietario.Id)
+            var existe = context.Proprietario
+                         .Where(prop => prop.Id == proprietario.Id)
                          .FirstOrDefault();
             if (existe != null)
             {
                 existe.Nome = proprietario.Nome;
                 existe.Status = proprietario.Status;
+                context.Proprietario.Update(existe);
+                context.SaveChanges();
                 return "Alteração realizada com sucesso!";
             }
             else
@@ -43,11 +49,13 @@ namespace WSImobControl.Controllers
         [HttpDelete]
         public string Delete(Proprietario proprietario)
         {
-            var existe = lista.Where(prop => prop.Id == proprietario.Id)
+            var existe = context.Proprietario
+                         .Where(prop => prop.Id == proprietario.Id)
                          .FirstOrDefault();
             if (existe != null)
             {
-                lista.Remove(existe);
+                context.Proprietario.Remove(existe);
+                context.SaveChanges() ;
                 return "Exclusão realizada com sucesso!";
             }
             else
@@ -59,11 +67,13 @@ namespace WSImobControl.Controllers
         [HttpDelete("{id}")]
         public string Delete2(string id)
         {
-            var existe = lista.Where(prop => prop.Id.ToString() == id)
+            var existe = context.Proprietario
+                         .Where(prop => prop.Id.ToString() == id)
                          .FirstOrDefault();
             if (existe != null)
             {
-                lista.Remove(existe);
+                context.Proprietario.Remove(existe);
+                context.SaveChanges();
                 return "Exclusão realizada com sucesso!";
             }
             else
@@ -75,13 +85,15 @@ namespace WSImobControl.Controllers
         [HttpGet("{id}")]
         public Proprietario Get2([FromRoute] string id)
         {
-            var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
+            var prop = context.Proprietario
+                       .Where(prop => prop.Id.ToString() == id)
+                       .FirstOrDefault();
             //select * from proprietario
             //where Id = ?
             return prop;
         }
 
-        [HttpGet("Parametro1")]
+        /*[HttpGet("Parametro1")]
         public Proprietario Get([FromQuery] string id)
         {
             var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
@@ -103,6 +115,6 @@ namespace WSImobControl.Controllers
         public string GetCurso()
         {
             return "Sistemas de Informação";
-        }
+        }*/
     }
 }

@@ -7,7 +7,7 @@ namespace WSImobControl.Model
         [Key]
         public Guid Id { get; set; }
         [Required]
-        [StringLength(100,MinimumLength = 4,ErrorMessage = "NOme deve ter de 4 a 100 caracteres")]
+        [StringLength(100,MinimumLength = 4,ErrorMessage = "Nome deve ter de 4 a 100 caracteres")]
         public string Nome { get; set; }
         [Required]
         public Status Status { get; set; }
