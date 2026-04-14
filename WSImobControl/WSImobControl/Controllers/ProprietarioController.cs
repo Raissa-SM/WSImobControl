@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WSImobControl.Data;
 using WSImobControl.Model;
 
@@ -10,111 +11,121 @@ namespace WSImobControl.Controllers
     public class ProprietarioController(PostgresDbContext context) : ControllerBase
     {
         [HttpGet]
-        public List<Proprietario> Get()
+        public async Task<IActionResult> Get()
         {
-            var lista = context.Proprietario
-                               .OrderBy(prop => prop.Nome)
-                               .ToList();
-            return lista;
+            try
+            {
+                var lista = await context.Proprietario
+                                   .OrderBy(prop => prop.Nome)
+                                   .ToListAsync();
+                return Ok(lista);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
-        public string Post(Proprietario prop)
+        public async Task<IActionResult> Post(Proprietario prop)
         {
-            context.Proprietario.Add(prop);
-            context.SaveChanges();
-            return "Inclusão realizada com sucesso!";
+            try
+            {
+                context.Proprietario.Add(prop);
+                await context.SaveChangesAsync();
+                return Ok("Inclusão realizada com sucesso!");
+            }
+            catch(Exception ex)
+            {
+                 return BadRequest("Erro, iclusão não realizada." + ex.Message);
+            }
         }
 
         [HttpPut]
-        public string Put(Proprietario proprietario)
+        public async Task<IActionResult> Put(Proprietario proprietario)
         {
-            var existe = context.Proprietario
+            try
+            {
+                var existe = await context.Proprietario
                          .Where(prop => prop.Id == proprietario.Id)
-                         .FirstOrDefault();
-            if (existe != null)
-            {
-                existe.Nome = proprietario.Nome;
-                existe.Status = proprietario.Status;
-                context.Proprietario.Update(existe);
-                context.SaveChanges();
-                return "Alteração realizada com sucesso!";
+                         .FirstOrDefaultAsync();
+                if (existe != null)
+                {
+                    existe.Nome = proprietario.Nome;
+                    existe.Status = proprietario.Status;
+                    context.Proprietario.Update(existe);
+                    await context.SaveChangesAsync();
+                    return Ok("Alteração realizada com sucesso!");
+                }
+                else
+                {
+                    return NotFound("Erro! Proprietario não encontrado!");
+                }
             }
-            else
+            catch(Exception ex)
             {
-                return "Erro! Proprietario não encontrado!";
+                return BadRequest("Erro ao alterar" + ex.Message);
             }
+            
         }
 
         [HttpDelete]
-        public string Delete(Proprietario proprietario)
+        public async Task<IActionResult> Delete(Proprietario proprietario)
         {
-            var existe = context.Proprietario
+            try
+            {
+                var existe = await context.Proprietario
                          .Where(prop => prop.Id == proprietario.Id)
-                         .FirstOrDefault();
-            if (existe != null)
-            {
-                context.Proprietario.Remove(existe);
-                context.SaveChanges() ;
-                return "Exclusão realizada com sucesso!";
+                         .FirstOrDefaultAsync();
+                if (existe != null)
+                {
+                    context.Proprietario.Remove(existe);
+                    await context.SaveChangesAsync();
+                    return Ok("Exclusão realizada com sucesso!");
+                }
+                else
+                {
+                    return NotFound("Erro! Proprietario não encontrado!");
+                }
             }
-            else
+            catch (Exception ex) 
             {
-                return "Erro! Proprietario não encontrado!";
+                return BadRequest("Erro ao deketar" + ex.Message);
             }
         }
 
         [HttpDelete("{id}")]
-        public string Delete2(string id)
+        public async Task<IActionResult> Delete2(string id)
         {
-            var existe = context.Proprietario
-                         .Where(prop => prop.Id.ToString() == id)
-                         .FirstOrDefault();
-            if (existe != null)
+            try
             {
-                context.Proprietario.Remove(existe);
-                context.SaveChanges();
-                return "Exclusão realizada com sucesso!";
+                var existe = await context.Proprietario
+                             .Where(prop => prop.Id.ToString() == id)
+                             .FirstOrDefaultAsync();
+                if (existe != null)
+                {
+                    context.Proprietario.Remove(existe);
+                    await context.SaveChangesAsync();
+                    return Ok("Exclusão realizada com sucesso!");
+                }
+                else
+                {
+                    return NotFound("Erro! Proprietario não encontrado!");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return "Erro! Proprietario não encontrado!";
+                return BadRequest("Erro ao deletar" + ex.Message);
             }
         }
 
         [HttpGet("{id}")]
-        public Proprietario Get2([FromRoute] string id)
+        public async Task<IActionResult> Get2([FromRoute] string id)
         {
-            var prop = context.Proprietario
+            var prop = await context.Proprietario
                        .Where(prop => prop.Id.ToString() == id)
-                       .FirstOrDefault();
-            //select * from proprietario
-            //where Id = ?
-            return prop;
+                       .FirstOrDefaultAsync();
+            return Ok(prop);
         }
-
-        /*[HttpGet("Parametro1")]
-        public Proprietario Get([FromQuery] string id)
-        {
-            var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
-            //select * from proprietario
-            //where Id = ?
-            return prop;
-        }
-
-        [HttpGet("Parametro3")]
-        public Proprietario Get3([FromHeader] string id)
-        {
-            var prop = lista.Where(prop => prop.Id.ToString() == id).FirstOrDefault();
-            //select * from proprietario
-            //where Id = ?
-            return prop;
-        }
-
-        [HttpGet("Curso")]
-        public string GetCurso()
-        {
-            return "Sistemas de Informação";
-        }*/
     }
 }
