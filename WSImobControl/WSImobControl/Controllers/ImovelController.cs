@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WSImobControl.Data;
 using WSImobControl.Model;
@@ -8,16 +7,25 @@ namespace WSImobControl.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ImovelController(PostgresDbContext context) : ControllerBase
+    public class ImovelController : ControllerBase
     {
+        //private static List<Imovel> lista = new List<Imovel>();
+        private readonly PostgresDbContext _context;
+
+        public ImovelController(PostgresDbContext context)
+        {
+            _context = context;
+        }
+
         [HttpGet]
         public async Task<IActionResult> Get()
         {
             try
             {
-                var lista = await context.Imovel
-                                   .OrderBy(imob => imob.Titulo)
-                                   .ToListAsync();
+                var lista = await _context.Imovel
+                            .Include(imo => imo.Proprietario)
+                            .OrderBy(imo => imo.Descricao)
+                            .ToListAsync();
                 return Ok(lista);
             }
             catch (Exception ex)
@@ -26,31 +34,13 @@ namespace WSImobControl.Controllers
             }
         }
 
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get2([FromRoute] string id)
-        {
-            try
-            {
-                var imov = await context.Imovel
-                                 .Where(imov => imov.Id.ToString() == id)
-                                 .FirstOrDefaultAsync();
-                return Ok(imov);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-
         [HttpPost]
-        public async Task<IActionResult> Post(Imovel imov)
+        public async Task<IActionResult> Post(Imovel imo)
         {
             try
             {
-                context.Imovel.Add(imov);
-                await context.SaveChangesAsync();
+                await _context.Imovel.AddAsync(imo);
+                await _context.SaveChangesAsync();
                 return Ok("Inclusão realizada com sucesso!");
             }
             catch (Exception ex)
@@ -60,58 +50,61 @@ namespace WSImobControl.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put(Imovel Imovel)
+        public async Task<IActionResult> Put(Imovel imovel)
         {
             try
             {
-                var existe = await context.Imovel
-                         .Where(imov => imov.Id == Imovel.Id)
-                         .FirstOrDefaultAsync();
+                var existe = await _context.Imovel
+                             .Where(imo => imo.Id == imovel.Id)
+                             .FirstOrDefaultAsync();
                 if (existe != null)
                 {
-                    existe.Titulo = Imovel.Titulo;
-                    existe.Descricao = Imovel.Descricao;
-                    existe.Preco = Imovel.Preco;
-                    existe.Endereco = Imovel.Endereco;
-                    existe.Status = Imovel.Status;
-                    context.Imovel.Update(existe);
-                    await context.SaveChangesAsync();
+                    existe.Titulo = imovel.Titulo;
+                    existe.Descricao = imovel.Descricao;
+                    existe.Preco = imovel.Preco;
+                    existe.Endereco = imovel.Endereco;
+                    existe.Status = imovel.Status;
+                    existe.ProprietarioId = imovel.ProprietarioId;
+                    _context.Imovel.Update(existe);
+                    await _context.SaveChangesAsync();
                     return Ok("Alteração realizada com sucesso!");
                 }
                 else
                 {
-                    return NotFound("Erro! Imovel não encontrado!");
+                    return NotFound("Erro, imóvel não encontrado!");
                 }
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
+
         }
 
         [HttpDelete]
-        public async Task<IActionResult> Delete(Imovel Imovel)
+        public async Task<IActionResult> Delete(Imovel imovel)
         {
             try
             {
-                var existe = await context.Imovel
-                         .Where(imov => imov.Id == Imovel.Id)
-                         .FirstOrDefaultAsync();
+                var existe = await _context.Imovel
+                             .Where(imo => imo.Id == imovel.Id)
+                             .FirstOrDefaultAsync();
                 if (existe != null)
                 {
-                    context.Imovel.Remove(existe);
-                    await context.SaveChangesAsync();
+                    _context.Imovel.Remove(existe);
+                    await _context.SaveChangesAsync();
                     return Ok("Exclusão realizada com sucesso!");
                 }
                 else
                 {
-                    return NotFound("Erro! Imovel não encontrado!");
+                    return NotFound("Erro, imóvel não encontrado!");
                 }
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
+
         }
 
         [HttpDelete("{id}")]
@@ -119,25 +112,41 @@ namespace WSImobControl.Controllers
         {
             try
             {
-                var existe = await context.Imovel
-                         .Where(imov => imov.Id.ToString() == id)
-                         .FirstOrDefaultAsync();
+                var existe = await _context.Imovel
+                             .Where(imo => imo.Id.ToString() == id)
+                             .FirstOrDefaultAsync();
                 if (existe != null)
                 {
-                    context.Imovel.Remove(existe);
-                    await context.SaveChangesAsync();
+                    _context.Imovel.Remove(existe);
+                    await _context.SaveChangesAsync();
                     return Ok("Exclusão realizada com sucesso!");
                 }
                 else
                 {
-                    return NotFound("Erro! Imovel não encontrado!");
+                    return NotFound("Erro, imóvel não encontrado!");
                 }
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
+
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get2([FromRoute] string id)
+        {
+            try
+            {
+                var imo = await _context.Imovel
+                           .Where(imo => imo.Id.ToString() == id)
+                           .FirstOrDefaultAsync();
+                return Ok(imo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

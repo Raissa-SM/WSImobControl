@@ -11,5 +11,6 @@ namespace WSImobControl.Data
 
         public DbSet<Proprietario> Proprietario { get; set; }
         public DbSet<Imovel> Imovel { get; set; }
+        public DbSet<Telefone> Telefone { get; set; }
     }
 }
